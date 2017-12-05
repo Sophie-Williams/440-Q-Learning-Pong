@@ -7,8 +7,18 @@
 //
 
 #include <stdio.h>
+#include "Game.hpp"
+#include <random>
 
 int main(){
-    printf("Enjoy MP4 Part2!!!!!!\n");
+    srand(clock());
+    float ave = 0;
+    int round = 1000;
+    game::Game g;
+    for(int i = 0; i < round; ++i){
+        ave += g.play_a_round();
+    }
+    ave /= round;
+    printf("Average:%f\n",ave);
     return 0;
 }
