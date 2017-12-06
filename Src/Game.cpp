@@ -9,6 +9,9 @@
 #include "Game.hpp"
 #include <random>
 
+#define B_SIZE 12
+#define P_SIZE 12
+
 game::Game::Game(){
     paddle_height = 0.2;
     
@@ -196,6 +199,8 @@ game::Action_Set game::Game::exploration(bool is_epsilon, float epsilon){
                 a = Up;
             if( Q[get_state(12, 12)][Down] > Q[get_state(12, 12)][a])
                 a = Down;
+            if( Q[get_state(12, 12)][Up] == Q[get_state(12, 12)][Down] && Q[get_state(12, 12)][Down] == Q[get_state(12, 12)][Nothing])
+                a = static_cast<Action_Set>(rand()%3);
         }
     }
     else{
