@@ -56,7 +56,7 @@ namespace game{
         
         //Q Learning part
         void Q_init();
-        Action_Set exploration(float e);
+        Action_Set exploration(bool is_epsilon, float epsilon);
         Action_Set choose_action();
         float get_utility(unsigned int state);
         

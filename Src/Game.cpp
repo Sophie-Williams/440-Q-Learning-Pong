@@ -177,6 +177,7 @@ void game::Game::Q_init(){
         i.resize(3);
 }
 
+//helper function for exploration method below
 float f(float q,int n){
     if(n<100)
         return 3;
@@ -184,25 +185,28 @@ float f(float q,int n){
         return q;
 }
 
-game::Action_Set game::Game::exploration(float e){
+game::Action_Set game::Game::exploration(bool is_epsilon, float epsilon){
     Action_Set a = Nothing;
-//    if( (rand()%100)/100.0 < e){
-//        a = static_cast<Action_Set>(rand() % 3);
-//    }
-//    else{
-//        if( Q[get_state(12, 12)][Up] > Q[get_state(12, 12)][a])
-//            a = Up;
-//        if( Q[get_state(12, 12)][Down] > Q[get_state(12, 12)][a])
-//            a = Down;
-//    }
-    
-    if( f(Q[get_state(12, 12)][Up],N[get_state(12, 12)][Up]) > f(Q[get_state(12, 12)][a],N[get_state(12, 12)][a]))
-        a = Up;
-    if( f(Q[get_state(12, 12)][Down],N[get_state(12, 12)][Down]) > f(Q[get_state(12, 12)][a],N[get_state(12, 12)][a]))
-        a = Down;
-    if(f(Q[get_state(12, 12)][Up],N[get_state(12, 12)][Up]) == f(Q[get_state(12, 12)][Down],N[get_state(12, 12)][Down]) && f(Q[get_state(12, 12)][Down],N[get_state(12, 12)][Down]) == f(Q[get_state(12, 12)][Nothing],N[get_state(12, 12)][Nothing]) ){
-        int r = rand()%3;
-        a = static_cast<Action_Set>(r);
+    if(is_epsilon){
+        if( (rand()%100)/100.0 < epsilon){
+            a = static_cast<Action_Set>(rand() % 3);
+        }
+        else{
+            if( Q[get_state(12, 12)][Up] > Q[get_state(12, 12)][a])
+                a = Up;
+            if( Q[get_state(12, 12)][Down] > Q[get_state(12, 12)][a])
+                a = Down;
+        }
+    }
+    else{
+        if( f(Q[get_state(12, 12)][Up],N[get_state(12, 12)][Up]) > f(Q[get_state(12, 12)][a],N[get_state(12, 12)][a]))
+            a = Up;
+        if( f(Q[get_state(12, 12)][Down],N[get_state(12, 12)][Down]) > f(Q[get_state(12, 12)][a],N[get_state(12, 12)][a]))
+            a = Down;
+        if(f(Q[get_state(12, 12)][Up],N[get_state(12, 12)][Up]) == f(Q[get_state(12, 12)][Down],N[get_state(12, 12)][Down]) && f(Q[get_state(12, 12)][Down],N[get_state(12, 12)][Down]) == f(Q[get_state(12, 12)][Nothing],N[get_state(12, 12)][Nothing]) ){
+            int r = rand()%3;
+            a = static_cast<Action_Set>(r);
+        }
     }
     return a;
 }
@@ -242,7 +246,7 @@ void game::Game::train_a_round(){
 
     while(1){
         s_current = get_state(12, 12);
-        a = exploration(0.2);
+        a = exploration(false,0.05);
         alpha = (float)C/(C+N[s_current][a]);
         
         N[s_current][a]++;
