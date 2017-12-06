@@ -179,7 +179,7 @@ void game::Game::Q_init(){
 
 float f(float q,int n){
     if(n<100)
-        return 1;
+        return 3;
     else
         return q;
 }
@@ -213,6 +213,8 @@ game::Action_Set game::Game::choose_action(){
         a = Up;
     if( Q[get_state(12, 12)][Down] > Q[get_state(12, 12)][a])
         a = Down;
+    if( Q[get_state(12, 12)][Up] == Q[get_state(12, 12)][Down] && Q[get_state(12, 12)][Down] == Q[get_state(12, 12)][Nothing])
+        a = static_cast<Action_Set>(rand()%3);
     return a;
 }
 
@@ -242,9 +244,9 @@ void game::Game::train(){
 }
 
 void game::Game::train_a_round(){
-    unsigned int C = 10;
+    unsigned int C = 200;
     float alpha;
-    float gamma = 0.25;
+    float gamma = 0.9;
     
     unsigned int s_current;
     int R_current = 0;
