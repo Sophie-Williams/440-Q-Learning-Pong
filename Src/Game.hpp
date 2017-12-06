@@ -59,7 +59,7 @@ namespace game{
         Action_Set exploration(float e);
         Action_Set choose_action();
         float get_utility(unsigned int state);
-        void train();
+        
         void train_a_round();
         
         void test();

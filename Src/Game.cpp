@@ -229,20 +229,6 @@ float game::Game::get_utility(unsigned int state){
     return u;
 }
 
-void game::Game::train(){
-    float alpha = 1;
-    float gamma = 0.1;
-    unsigned int s_current = get_state(12, 12);
-    int R = get_reward();
-    Action_Set a = choose_action();
-    move_paddle(a);
-    move_ball();
-    bounce();
-    unsigned int s_next = get_state(12, 12);
-
-    Q[s_current][a] = Q[s_current][a] + alpha * (R + gamma * get_utility(get_state(12, 12)) - Q[s_current][a]);
-}
-
 void game::Game::train_a_round(){
     unsigned int C = 200;
     float alpha;
