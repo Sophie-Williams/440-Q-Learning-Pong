@@ -10,9 +10,10 @@
 #define Game_hpp
 
 #include <stdio.h>
+#include <vector>
 
 namespace game{
-    enum action_set {Nothing, Up, Down};
+    enum action_set {Nothing = 0, Up, Down};
     typedef enum action_set Action_Set;
     
     class Game{
@@ -25,11 +26,16 @@ namespace game{
         
         float paddle_height;
         
+        std::vector<std::vector<float>> Q;
+        std::vector<std::vector<unsigned int>> N;
+        
     public:
         Game();
         void reset();
         
-        void run();
+        void move_ball();
+        
+        //return value is whether a rebound by the paddle happens
         bool bounce();
         
         void output_status();
@@ -38,9 +44,25 @@ namespace game{
         
         void move_paddle(Action_Set a);
         
-        Action_Set choose_action();
-        
         int play_a_round();
+        
+        //board_size is how to divide the board, for example 12*12 then board_size=12;
+        //paddle_discretion is how to divide the location of the paddle
+        unsigned int get_state(unsigned int board_discretion, unsigned int paddle_discretion);
+        
+        unsigned int get_state_size(unsigned int board_discretion, unsigned int paddle_discretion);
+        
+        int get_reward();
+        
+        //Q Learning part
+        void Q_init();
+        Action_Set exploration(float e);
+        Action_Set choose_action();
+        float get_utility(unsigned int state);
+        void train();
+        void train_a_round();
+        
+        void test();
         
     };
 }

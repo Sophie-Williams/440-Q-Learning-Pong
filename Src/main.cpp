@@ -11,14 +11,24 @@
 #include <random>
 
 int main(){
-    srand(clock());
+    srand((unsigned int)clock());
+
+    game::Game g;
+    g.Q_init();
+    for(int i = 0; i<100000; ++i)
+        g.train_a_round();
+    
     float ave = 0;
     int round = 1000;
-    game::Game g;
     for(int i = 0; i < round; ++i){
-        ave += g.play_a_round();
+        int numthis = g.play_a_round();
+        printf("%d\n",numthis);
+        ave += numthis;
     }
     ave /= round;
     printf("Average:%f\n",ave);
+    
+    g.test();
+
     return 0;
 }
