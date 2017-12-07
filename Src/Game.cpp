@@ -157,10 +157,22 @@ unsigned int game::Game::get_state_size(unsigned int board_discretion, unsigned 
     return (board_discretion*board_discretion*paddle_discretion*2*3+1);
 }
 
-int game::Game::get_reward(){
+int game::Game::get_reward(Action_Set a){
     int reward;
-    if(ball_x > 1){
-        if(ball_y >= paddle_y && ball_y <= paddle_y + paddle_height)
+    float padde_y_after_action = paddle_y;
+    
+    if(a == Up)
+        padde_y_after_action -= 0.04;
+    else if(a == Down)
+        padde_y_after_action += 0.04;
+    
+    if( padde_y_after_action<0 )
+        padde_y_after_action = 0;
+    else if( padde_y_after_action > 1-paddle_height )
+        padde_y_after_action = 1-paddle_height;
+    
+    if(ball_x + velocity_x > 1){
+        if(ball_y + velocity_y >= padde_y_after_action && ball_y + velocity_y<= padde_y_after_action + paddle_height)
             reward = 1;
         else
             reward = -1;
@@ -244,25 +256,23 @@ void game::Game::train_a_round(){
     float gamma = 0.9;
     
     unsigned int s_current;
-    int R_current = 0;
-    int R_next;
+    int R;
     Action_Set a = Nothing;
     unsigned int s_next;
 
     while(1){
         s_current = get_state(B_DISCRETE, P_DISCRETE);
         a = exploration(false,0.05);
+        R = get_reward(a);
         alpha = (float)C/(C+N[s_current][a]);
         
         N[s_current][a]++;
         move_paddle(a);
         move_ball();
-        R_next = get_reward();
         bounce();
         s_next = get_state(B_DISCRETE, P_DISCRETE);
         
-        Q[s_current][a] = Q[s_current][a] + alpha * (R_current + gamma * get_utility(s_next) - Q[s_current][a]);
-        R_current = R_next;
+        Q[s_current][a] = Q[s_current][a] + alpha * (R + gamma * get_utility(s_next) - Q[s_current][a]);
         
         if(is_termination()){
             reset();

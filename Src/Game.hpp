@@ -60,7 +60,7 @@ namespace game{
         //reture the total number of possible states, according to the discreting requirment in the instruction
         unsigned int get_state_size(unsigned int board_discretion, unsigned int paddle_discretion);
         //return the reward of current status, should run after move_ball() but before bounce()
-        int get_reward();
+        int get_reward(Action_Set a);
         
     //Q Learning part
         //initial Q and N datastructure
