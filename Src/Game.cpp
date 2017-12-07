@@ -9,9 +9,6 @@
 #include "Game.hpp"
 #include <random>
 
-#define B_SIZE 12
-#define P_SIZE 12
-
 game::Game::Game(){
     paddle_height = 0.2;
     
@@ -48,6 +45,7 @@ bool game::Game::bounce(){
         velocity_x = -1 * velocity_x;
     }
     else if(ball_x > 1){
+        //if the ball passes the line of the paddle but it's y value is within the range of the paddle, it can be rebounded
         if(ball_y >= paddle_y && ball_y <= paddle_y + paddle_height){
             ball_x = 2 - ball_x;
             velocity_x = -1 * velocity_x + (rand() % 3001 - 1500)/100000.0;
@@ -63,10 +61,12 @@ bool game::Game::bounce(){
             velocity_y = velocity_y + (rand() % 6001 - 3000)/100000.0;
             if( abs(velocity_y) > 1 )
                 velocity_y = 1 * (velocity_y/abs(velocity_y));
-            
+            //return true if the ball is rebounded
             return true;
         }
     }
+    //otherwise return false, meaning the ball is not rebounded by the paddle
+    //can may still bounced by the wall
     return false;
 }
 
@@ -172,10 +172,10 @@ int game::Game::get_reward(){
 
 void game::Game::Q_init(){
     //init Q, total size if action_number * state_size, each entry for Q(s,a)
-    Q.resize(get_state_size(12, 12));
+    Q.resize(get_state_size(B_DISCRETE, P_DISCRETE));
     for(auto &i : Q)
         i.resize(3);
-    N.resize(get_state_size(12, 12));
+    N.resize(get_state_size(B_DISCRETE, P_DISCRETE));
     for(auto &i : N)
         i.resize(3);
 }
@@ -195,20 +195,20 @@ game::Action_Set game::Game::exploration(bool is_epsilon, float epsilon){
             a = static_cast<Action_Set>(rand() % 3);
         }
         else{
-            if( Q[get_state(12, 12)][Up] > Q[get_state(12, 12)][a])
+            if( Q[get_state(B_DISCRETE, P_DISCRETE)][Up] > Q[get_state(B_DISCRETE, P_DISCRETE)][a])
                 a = Up;
-            if( Q[get_state(12, 12)][Down] > Q[get_state(12, 12)][a])
+            if( Q[get_state(B_DISCRETE, P_DISCRETE)][Down] > Q[get_state(B_DISCRETE, P_DISCRETE)][a])
                 a = Down;
-            if( Q[get_state(12, 12)][Up] == Q[get_state(12, 12)][Down] && Q[get_state(12, 12)][Down] == Q[get_state(12, 12)][Nothing])
+            if( Q[get_state(B_DISCRETE, P_DISCRETE)][Up] == Q[get_state(B_DISCRETE, P_DISCRETE)][Down] && Q[get_state(B_DISCRETE, P_DISCRETE)][Down] == Q[get_state(B_DISCRETE, P_DISCRETE)][Nothing])
                 a = static_cast<Action_Set>(rand()%3);
         }
     }
     else{
-        if( f(Q[get_state(12, 12)][Up],N[get_state(12, 12)][Up]) > f(Q[get_state(12, 12)][a],N[get_state(12, 12)][a]))
+        if( f(Q[get_state(B_DISCRETE, P_DISCRETE)][Up],N[get_state(B_DISCRETE, P_DISCRETE)][Up]) > f(Q[get_state(B_DISCRETE, P_DISCRETE)][a],N[get_state(B_DISCRETE, P_DISCRETE)][a]))
             a = Up;
-        if( f(Q[get_state(12, 12)][Down],N[get_state(12, 12)][Down]) > f(Q[get_state(12, 12)][a],N[get_state(12, 12)][a]))
+        if( f(Q[get_state(B_DISCRETE, P_DISCRETE)][Down],N[get_state(B_DISCRETE, P_DISCRETE)][Down]) > f(Q[get_state(B_DISCRETE, P_DISCRETE)][a],N[get_state(B_DISCRETE, P_DISCRETE)][a]))
             a = Down;
-        if(f(Q[get_state(12, 12)][Up],N[get_state(12, 12)][Up]) == f(Q[get_state(12, 12)][Down],N[get_state(12, 12)][Down]) && f(Q[get_state(12, 12)][Down],N[get_state(12, 12)][Down]) == f(Q[get_state(12, 12)][Nothing],N[get_state(12, 12)][Nothing]) ){
+        if(f(Q[get_state(B_DISCRETE, P_DISCRETE)][Up],N[get_state(B_DISCRETE, P_DISCRETE)][Up]) == f(Q[get_state(B_DISCRETE, P_DISCRETE)][Down],N[get_state(B_DISCRETE, P_DISCRETE)][Down]) && f(Q[get_state(B_DISCRETE, P_DISCRETE)][Down],N[get_state(B_DISCRETE, P_DISCRETE)][Down]) == f(Q[get_state(B_DISCRETE, P_DISCRETE)][Nothing],N[get_state(B_DISCRETE, P_DISCRETE)][Nothing]) ){
             int r = rand()%3;
             a = static_cast<Action_Set>(r);
         }
@@ -218,11 +218,11 @@ game::Action_Set game::Game::exploration(bool is_epsilon, float epsilon){
 
 game::Action_Set game::Game::choose_action(){
     Action_Set a = Nothing;
-    if( Q[get_state(12, 12)][Up] > Q[get_state(12, 12)][a])
+    if( Q[get_state(B_DISCRETE, P_DISCRETE)][Up] > Q[get_state(B_DISCRETE, P_DISCRETE)][a])
         a = Up;
-    if( Q[get_state(12, 12)][Down] > Q[get_state(12, 12)][a])
+    if( Q[get_state(B_DISCRETE, P_DISCRETE)][Down] > Q[get_state(B_DISCRETE, P_DISCRETE)][a])
         a = Down;
-    if( Q[get_state(12, 12)][Up] == Q[get_state(12, 12)][Down] && Q[get_state(12, 12)][Down] == Q[get_state(12, 12)][Nothing])
+    if( Q[get_state(B_DISCRETE, P_DISCRETE)][Up] == Q[get_state(B_DISCRETE, P_DISCRETE)][Down] && Q[get_state(B_DISCRETE, P_DISCRETE)][Down] == Q[get_state(B_DISCRETE, P_DISCRETE)][Nothing])
         a = static_cast<Action_Set>(rand()%3);
     return a;
 }
@@ -250,7 +250,7 @@ void game::Game::train_a_round(){
     unsigned int s_next;
 
     while(1){
-        s_current = get_state(12, 12);
+        s_current = get_state(B_DISCRETE, P_DISCRETE);
         a = exploration(false,0.05);
         alpha = (float)C/(C+N[s_current][a]);
         
@@ -259,7 +259,7 @@ void game::Game::train_a_round(){
         move_ball();
         R_next = get_reward();
         bounce();
-        s_next = get_state(12, 12);
+        s_next = get_state(B_DISCRETE, P_DISCRETE);
         
         Q[s_current][a] = Q[s_current][a] + alpha * (R_current + gamma * get_utility(s_next) - Q[s_current][a]);
         R_current = R_next;

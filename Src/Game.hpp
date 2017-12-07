@@ -12,6 +12,9 @@
 #include <stdio.h>
 #include <vector>
 
+#define B_DISCRETE 12
+#define P_DISCRETE 12
+
 namespace game{
     enum action_set {Nothing = 0, Up, Down};
     typedef enum action_set Action_Set;
