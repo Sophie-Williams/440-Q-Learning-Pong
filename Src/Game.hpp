@@ -19,6 +19,9 @@ namespace game{
     enum action_set {Nothing = 0, Up, Down};
     typedef enum action_set Action_Set;
     
+    enum player {Left = 0, Right};
+    typedef enum player Player;
+    
     class Game{
     private:
         //variable for the status of the game (ball position, ball velocity, paddle position)
@@ -27,6 +30,7 @@ namespace game{
         float velocity_x;
         float velocity_y;
         float paddle_y;
+        float left_paddle_y;
         
         //the height of the paddle
         float paddle_height;
@@ -45,14 +49,15 @@ namespace game{
         void move_ball();
         //deal with bounce after moving the ball, i.e. if the ball passes the wall or passes the paddle, bounce it
         //if the ball did not pass the wall or paddle simply do nothing
-        //return value is whether a rebound by the paddle happens
+        //return value is whether a rebound by the righter paddle happens
         bool bounce();
         //output current status of the varibales, for debug
         void output_status();
         //judge whether the termination condition happens, i.e. the ball passes the line of the paddle as is not rebounded back
-        bool is_termination();
-        //move the paddle according to the action a
-        void move_paddle(Action_Set a);
+        //parameter will save who is the winner
+        bool is_termination(Player &p);
+        //move the paddle according to player p and action a
+        void move_paddle(Player p, Action_Set a);
         //hash current game status to a state# according to the discreting requirment in the instruction
         //board_size is how to divide the board, for example 12*12 then board_size=12;
         //paddle_discretion is how to divide the range of location of the paddle
@@ -76,9 +81,12 @@ namespace game{
         
     //Playing part
         //play the game for a round until termination
-        int play_a_round();
-        //choose an action according to currently learned Q value
-        Action_Set choose_action();
+        //return how many times rebounded by Right player and parameter will save the winner
+        int play_a_round(Player &p);
+        //choose an action for player p
+        //for Right player it will choose according to currently learned Q value
+        //for Left player it will choose according to hard-coded policy (always trying to catch up the ball)
+        Action_Set choose_action(Player p);
         
     };
 }

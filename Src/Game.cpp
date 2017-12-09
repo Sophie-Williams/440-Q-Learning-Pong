@@ -17,6 +17,7 @@ game::Game::Game(){
     velocity_x = 0.03;
     velocity_y = 0.01;
     paddle_y = 0.5 - paddle_height/2;
+    left_paddle_y = 0.5 - paddle_height/2;
 }
 
 void game::Game::reset(){
@@ -25,6 +26,7 @@ void game::Game::reset(){
     velocity_x = 0.03;
     velocity_y = 0.01;
     paddle_y = 0.5 - paddle_height/2;
+    left_paddle_y = 0.5 - paddle_height/2;
 }
 
 void game::Game::move_ball(){
@@ -41,8 +43,23 @@ bool game::Game::bounce(){
         velocity_y = -1 * velocity_y;
     }
     if(ball_x < 0){
-        ball_x = -1 * ball_x;
-        velocity_x = -1 * velocity_x;
+        //if the ball passes the line of the left_paddle but it's y value is within the range of the paddle, it can be rebounded
+        if(ball_y >= left_paddle_y && ball_y <= left_paddle_y + paddle_height){
+            ball_x = -1 * ball_x;
+            velocity_x = -1 * velocity_x + (rand() % 3001 - 1500)/100000.0;
+            if( abs(velocity_x) < 0.03 ){
+                if( velocity_x != 0 )
+                    velocity_x = 0.03 * (velocity_x/abs(velocity_x));
+                else
+                    velocity_x = (rand()%2 == 0)?0.03:(-0.03);
+            }
+            else if( abs(velocity_x) > 1 )
+                velocity_x = 1 * (velocity_x/abs(velocity_x));
+            
+            velocity_y = velocity_y + (rand() % 6001 - 3000)/100000.0;
+            if( abs(velocity_y) > 1 )
+                velocity_y = 1 * (velocity_y/abs(velocity_y));
+        }
     }
     else if(ball_x > 1){
         //if the ball passes the line of the paddle but it's y value is within the range of the paddle, it can be rebounded
@@ -61,7 +78,7 @@ bool game::Game::bounce(){
             velocity_y = velocity_y + (rand() % 6001 - 3000)/100000.0;
             if( abs(velocity_y) > 1 )
                 velocity_y = 1 * (velocity_y/abs(velocity_y));
-            //return true if the ball is rebounded
+            //return true if the ball is rebounded by right player
             return true;
         }
     }
@@ -70,38 +87,57 @@ bool game::Game::bounce(){
     return false;
 }
 
-bool game::Game::is_termination(){
-    if(ball_x > 1)
+bool game::Game::is_termination(Player &p){
+    if(ball_x > 1){
+        p = Left;
         return true;
+    }
+    else if(ball_x < 0){
+        p = Right;
+        return true;
+    }
     else
         return false;
 }
 
 void game::Game::output_status(){
-    printf("b_x:%f b_y:%f v_x:%f v_y:%f p_y:%f\n", ball_x, ball_y, velocity_x, velocity_y, paddle_y);
+    printf("b_x:%f b_y:%f v_x:%f v_y:%f p_y:%f l_p_y:%f\n", ball_x, ball_y, velocity_x, velocity_y, paddle_y, left_paddle_y);
 }
 
-void game::Game::move_paddle(Action_Set a){
-    if(a == Up)
-        paddle_y -= 0.04;
-    else if(a == Down)
-        paddle_y += 0.04;
-    
-    if( paddle_y<0 )
-        paddle_y = 0;
-    else if( paddle_y > 1-paddle_height )
-        paddle_y = 1-paddle_height;
-
+void game::Game::move_paddle(Player p, Action_Set a){
+    if(p == Right){
+        if(a == Up)
+            paddle_y -= 0.04;
+        else if(a == Down)
+            paddle_y += 0.04;
+        
+        if( paddle_y<0 )
+            paddle_y = 0;
+        else if( paddle_y > 1-paddle_height )
+            paddle_y = 1-paddle_height;
+    }
+    else if(p == Left){
+        if(a == Up)
+            left_paddle_y -= 0.02;
+        else if(a == Down)
+            left_paddle_y += 0.02;
+        
+        if( left_paddle_y<0 )
+            left_paddle_y = 0;
+        else if( left_paddle_y > 1-paddle_height )
+            left_paddle_y = 1-paddle_height;
+    }
 }
 
-int game::Game::play_a_round(){
+int game::Game::play_a_round(Player &p){
     int num = 0;
     while(1){
-        move_paddle(choose_action());
+        move_paddle(Left, choose_action(Left));
+        move_paddle(Right, choose_action(Right));
         move_ball();
         if(bounce())
             num++;
-        if(is_termination()){
+        if(is_termination(p)){
             reset();
             return num;
         }
@@ -116,10 +152,12 @@ unsigned int game::Game::get_state(unsigned int board_discretion, unsigned int p
     int v_y_discrete;
     unsigned int p_y_disctete;
     bool is_special_state;
+    bool is_left_special_state;
     
     unsigned int state = 0;
 
     is_special_state = ball_x > 1;
+    is_left_special_state = ball_x < 0;
     
     //discrete ball_x between 0 to board_discretion-1
     b_x_discrete = floor(ball_x*board_discretion);
@@ -142,6 +180,9 @@ unsigned int game::Game::get_state(unsigned int board_discretion, unsigned int p
         p_y_disctete = paddle_discretion-1;
     if(is_special_state)
         state = 0;
+    else if(is_left_special_state){
+        state = (board_discretion*board_discretion*paddle_discretion*2*3+1+1) - 1;
+    }
     else{
         state = 0;
         state += (b_y_discrete*board_discretion + b_x_discrete) * 2 * 3 * paddle_discretion;
@@ -154,7 +195,7 @@ unsigned int game::Game::get_state(unsigned int board_discretion, unsigned int p
 }
 
 unsigned int game::Game::get_state_size(unsigned int board_discretion, unsigned int paddle_discretion){
-    return (board_discretion*board_discretion*paddle_discretion*2*3+1);
+    return (board_discretion*board_discretion*paddle_discretion*2*3+1+1);
 }
 
 int game::Game::get_reward(Action_Set a){
@@ -228,14 +269,25 @@ game::Action_Set game::Game::exploration(bool is_epsilon, float epsilon){
     return a;
 }
 
-game::Action_Set game::Game::choose_action(){
+game::Action_Set game::Game::choose_action(Player p){
     Action_Set a = Nothing;
-    if( Q[get_state(B_DISCRETE, P_DISCRETE)][Up] > Q[get_state(B_DISCRETE, P_DISCRETE)][a])
-        a = Up;
-    if( Q[get_state(B_DISCRETE, P_DISCRETE)][Down] > Q[get_state(B_DISCRETE, P_DISCRETE)][a])
-        a = Down;
-    if( Q[get_state(B_DISCRETE, P_DISCRETE)][Up] == Q[get_state(B_DISCRETE, P_DISCRETE)][Down] && Q[get_state(B_DISCRETE, P_DISCRETE)][Down] == Q[get_state(B_DISCRETE, P_DISCRETE)][Nothing])
-        a = static_cast<Action_Set>(rand()%3);
+    if(p == Right){
+        if( Q[get_state(B_DISCRETE, P_DISCRETE)][Up] > Q[get_state(B_DISCRETE, P_DISCRETE)][a])
+            a = Up;
+        if( Q[get_state(B_DISCRETE, P_DISCRETE)][Down] > Q[get_state(B_DISCRETE, P_DISCRETE)][a])
+            a = Down;
+        if( Q[get_state(B_DISCRETE, P_DISCRETE)][Up] == Q[get_state(B_DISCRETE, P_DISCRETE)][Down] && Q[get_state(B_DISCRETE, P_DISCRETE)][Down] == Q[get_state(B_DISCRETE, P_DISCRETE)][Nothing])
+            a = static_cast<Action_Set>(rand()%3);
+    }
+    else if(p == Left){
+        float left_paddle_center = left_paddle_y + paddle_height/2;
+        if(left_paddle_center > ball_y)
+            a = Up;
+        else if(left_paddle_center < ball_y)
+            a = Down;
+        else
+            a = Nothing;
+    }
     return a;
 }
 
@@ -259,6 +311,8 @@ void game::Game::train_a_round(){
     int R;
     Action_Set a = Nothing;
     unsigned int s_next;
+    
+    Player winner;
 
     while(1){
         s_current = get_state(B_DISCRETE, P_DISCRETE);
@@ -267,14 +321,15 @@ void game::Game::train_a_round(){
         alpha = (float)C/(C+N[s_current][a]);
         
         N[s_current][a]++;
-        move_paddle(a);
+        move_paddle(Left, choose_action(Left));
+        move_paddle(Right, a);
         move_ball();
         bounce();
         s_next = get_state(B_DISCRETE, P_DISCRETE);
         
         Q[s_current][a] = Q[s_current][a] + alpha * (R + gamma * get_utility(s_next) - Q[s_current][a]);
         
-        if(is_termination()){
+        if(is_termination(winner)){
             reset();
             break;
         }
