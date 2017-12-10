@@ -216,10 +216,17 @@ int game::Game::get_reward(Action_Set a){
         if(ball_y + velocity_y >= padde_y_after_action && ball_y + velocity_y<= padde_y_after_action + paddle_height)
             reward = 1;
         else
+            reward = -2;
+    }
+    else if(ball_x + velocity_x < 0){
+        if((ball_y + velocity_y < left_paddle_y) && (ball_y + velocity_y > left_paddle_y + paddle_height))
+            reward = 2;
+        else
             reward = -1;
     }
     else
         reward = 0;
+    
     return reward;
 }
 
@@ -236,7 +243,7 @@ void game::Game::Q_init(){
 //helper function for exploration method below
 float f(float q,int n){
     if(n<100)
-        return 3;
+        return 0.9;
     else
         return q;
 }
