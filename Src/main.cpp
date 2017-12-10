@@ -25,6 +25,7 @@ int main(){
         int numthis = g.play_a_round();
         printf("%d\n",numthis);
         ave += numthis;
+        getchar();
     }
     ave /= round;
     printf("Testing time:%fs\n",(clock() - t)/(float)CLOCKS_PER_SEC);
