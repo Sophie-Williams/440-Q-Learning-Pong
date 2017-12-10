@@ -369,9 +369,7 @@ void game::Game::draw(){
             else if(j==0 && i>left_paddle_y*window_size && i<(left_paddle_y+paddle_height)*window_size)
                 printf("|");
             else if((i==0) || (i==window_size-1))
-                printf(".");
-            else if((j==0) || (j == window_size-1))
-                printf(".");
+                printf("-");
             else
                 printf(" ");
         }
