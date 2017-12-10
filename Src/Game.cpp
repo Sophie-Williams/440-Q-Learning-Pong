@@ -297,7 +297,7 @@ void game::Game::test(){
 }
 
 void game::Game::draw(){
-    const int window_size = 50;
+    const int window_size = 30;
     system("clear");
     for(int i = 0; i<window_size; ++i){
         for(int j = 0; j<window_size; ++j){

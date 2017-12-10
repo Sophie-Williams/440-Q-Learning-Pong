@@ -20,10 +20,10 @@ int main(){
     printf("Training time:%fs\n",(clock() - t)/(float)CLOCKS_PER_SEC);
     t=clock();
     float ave = 0;
-    int round = 1;
+    int round = 1000;
     for(int i = 0; i < round; ++i){
         int numthis = g.play_a_round();
-        //printf("%d\n",numthis);
+        printf("%d\n",numthis);
         ave += numthis;
     }
     ave /= round;
