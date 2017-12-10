@@ -195,7 +195,7 @@ void game::Game::Q_init(){
 //helper function for exploration method below
 float f(float q,int n){
     if(n<100)
-        return 3;
+        return 0.9;
     else
         return q;
 }
