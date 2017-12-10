@@ -29,6 +29,7 @@ int main(){
         ave += numthis;
         if(winner == game::Right)
             Right_win_num++;
+        getchar();
     }
     ave /= round;
     printf("Testing time:%fs\n",(clock() - t)/(float)CLOCKS_PER_SEC);

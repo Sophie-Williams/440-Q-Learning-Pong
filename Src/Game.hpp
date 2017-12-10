@@ -88,6 +88,7 @@ namespace game{
         //for Left player it will choose according to hard-coded policy (always trying to catch up the ball)
         Action_Set choose_action(Player p);
         
+        void draw();
     };
 }
 

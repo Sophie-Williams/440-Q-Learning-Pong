@@ -8,6 +8,7 @@
 
 #include "Game.hpp"
 #include <random>
+#include <unistd.h>
 
 game::Game::Game(){
     paddle_height = 0.2;
@@ -131,12 +132,14 @@ void game::Game::move_paddle(Player p, Action_Set a){
 
 int game::Game::play_a_round(Player &p){
     int num = 0;
+    draw();
     while(1){
         move_paddle(Left, choose_action(Left));
         move_paddle(Right, choose_action(Right));
         move_ball();
         if(bounce())
             num++;
+        draw();
         if(is_termination(p)){
             reset();
             return num;
@@ -353,3 +356,28 @@ void game::Game::test(){
     }
     printf("%f\n",maxQ);
 }
+
+void game::Game::draw(){
+    const int window_size = 30;
+    system("clear");
+    for(int i = 0; i<window_size; ++i){
+        for(int j = 0; j<window_size; ++j){
+            if( int(ball_x*window_size) == j && int(ball_y*window_size) == i)
+                printf("o");
+            else if(j==window_size-1 && i>paddle_y*window_size && i<(paddle_y+paddle_height)*window_size)
+                printf("|");
+            else if(j==0 && i>left_paddle_y*window_size && i<(left_paddle_y+paddle_height)*window_size)
+                printf("|");
+            else if((i==0) || (i==window_size-1))
+                printf(".");
+            else if((j==0) || (j == window_size-1))
+                printf(".");
+            else
+                printf(" ");
+        }
+        printf("\n");
+    }
+    usleep(30000);
+}
+
+
