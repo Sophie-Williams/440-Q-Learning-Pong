@@ -80,6 +80,9 @@ namespace game{
         //choose an action according to currently learned Q value
         Action_Set choose_action();
         
+    //drawing
+        void draw();
+        
     };
 }
 
